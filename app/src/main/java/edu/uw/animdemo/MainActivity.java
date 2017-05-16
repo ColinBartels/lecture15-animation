@@ -48,9 +48,15 @@ public class MainActivity extends AppCompatActivity {
         float y = event.getY() - getSupportActionBar().getHeight(); //closer to center...
 
         int action = MotionEventCompat.getActionMasked(event);
+
+        int pointerIndex = MotionEventCompat.getActionIndex(event);
+        int pointerId = MotionEventCompat.getPointerId(event, pointerIndex);
+
         switch(action) {
             case (MotionEvent.ACTION_DOWN) : //put finger down
                 //Log.v(TAG, "finger down");
+
+                view.addTouch(pointerId, event.getX(pointerIndex), event.getY(pointerIndex) - getSupportActionBar().getHeight());
 
                 ObjectAnimator xAnim = ObjectAnimator.ofFloat(view.ball, "x", x);
                 xAnim.setDuration(1000);
@@ -70,8 +76,29 @@ public class MainActivity extends AppCompatActivity {
                 //Log.v(TAG, "finger move");
 //                view.ball.cx = x;
 //                view.ball.cy = y;
+
+                for(int i = 0; i < event.getPointerCount(); i++) {
+                    int id = event.getPointerId(i);
+                    float moveX = event.getX(i);
+                    float moveY = event.getY(i) - getSupportActionBar().getHeight();
+                    view.moveTouch(id, moveX, moveY);
+                }
                 return true;
+
+            case (MotionEvent.ACTION_POINTER_DOWN):
+                Log.v(TAG, "additional finger placed");
+                view.addTouch(pointerId, event.getX(pointerIndex), event.getY(pointerIndex) - getSupportActionBar().getHeight());
+                return true;
+
+            case (MotionEvent.ACTION_POINTER_UP):
+                Log.v(TAG, "additional finger removed");
+                view.removeTouch(pointerId);
+                return true;
+
             case (MotionEvent.ACTION_UP) : //lift finger up
+                view.removeTouch(pointerId);
+                return true;
+
             case (MotionEvent.ACTION_CANCEL) : //aborted gesture
             case (MotionEvent.ACTION_OUTSIDE) : //outside bounds
             default :
